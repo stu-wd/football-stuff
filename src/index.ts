@@ -1,6 +1,7 @@
 import { Player, Team } from './models';
 import { getTeam } from './services/getTeam';
 import xray from 'x-ray';
+import { DateTime } from 'luxon';
 
 const x = xray();
 
@@ -18,8 +19,8 @@ pitchers.map((pitcher: Player) => {
         pitchers: ['.pitchers__row .fullName'],
       })((err: any, result: any) => {
         if (err) return `ERROR ${err}`;
-        else if (result.pitchers.length > 0) formatEspnTitle(result.date, (data: any) => {
-          console.log(data);
+        else if (result.pitchers.length > 0) formatEspnTitle(result.date, (newDate: any) => {
+          console.log(newDate, result.pitchers);
         });
       });
     }
@@ -28,7 +29,7 @@ pitchers.map((pitcher: Player) => {
 
 const formatEspnTitle = (date: string, callback: Function) => {
   const sliced = date.split(' - ');
-
+  callback(sliced[0] + ' - ' + sliced[2]);
 };
 
 export { };

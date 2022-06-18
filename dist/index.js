@@ -16,8 +16,8 @@ pitchers.map((pitcher) => {
                 if (err)
                     return `ERROR ${err}`;
                 else if (result.pitchers.length > 0)
-                    formatEspnTitle(result.date, (data) => {
-                        console.log(data);
+                    formatEspnTitle(result.date, (newDate) => {
+                        console.log(newDate, result.pitchers);
                     });
             });
         }
@@ -25,4 +25,5 @@ pitchers.map((pitcher) => {
 });
 const formatEspnTitle = (date, callback) => {
     const sliced = date.split(' - ');
+    callback(sliced[0] + ' - ' + sliced[2]);
 };
