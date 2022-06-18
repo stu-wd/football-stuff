@@ -5,6 +5,7 @@
     "fantasy": "./dist/index.js"
   },
   "scripts": {
+    "launch": "tsc --outDir ./dist && node --es-module-specifier-resolution=node ./dist/index.js",
     "build": "tsc --outDir ./dist",
     "start": "node --es-module-specifier-resolution=node ./dist/index.js",
     "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
@@ -26,6 +27,8 @@
     }
   },
   "dependencies": {
-    "axios": "^0.27.2"
+    "axios": "^0.27.2",
+    "x-ray": "^2.3.4",
+    "xray": "^0.5.1"
   }
 }
