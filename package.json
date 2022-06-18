@@ -1,0 +1,31 @@
+{
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "fantasy": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc --outDir ./dist",
+    "start": "node --es-module-specifier-resolution=node ./dist/index.js",
+    "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "dev": "nodemon -x node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm index.ts"
+  },
+  "jest": {
+    "preset": "ts-jest/presets/default-esm",
+    "modulePathIgnorePatterns": [
+      "<rootDir>/dist/",
+      "<rootDir>/node_modules/"
+    ],
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
+    "globals": {
+      "ts-jest": {
+        "useESM": true
+      }
+    }
+  },
+  "dependencies": {
+    "axios": "^0.27.2"
+  }
+}
