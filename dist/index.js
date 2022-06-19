@@ -4,17 +4,61 @@ const x = xray();
 const team = await getTeam();
 const hitters = team.hitters;
 const pitchers = team.pitchers;
+const weeks = [];
+const handleSplitWeeks = (starts, week, callback) => {
+    if (starts.length > 0) {
+        if (starts[0].numDayInWeek != 7) {
+            console.log('1st');
+            week.push(starts[0]);
+            starts.shift();
+            handleSplitWeeks(starts, week, callback);
+        }
+        else if (starts[0].numDayInWeek === 7 && starts[1].numDayInWeek === 7) {
+            console.log('2nd');
+            week.push(starts[0]);
+            starts.shift();
+            handleSplitWeeks(starts, week, callback);
+        }
+        else if (starts[0].numDayInWeek === 7 && starts[1].numDayInWeek != 7) {
+            console.log('3rd');
+            week.push(starts[0]);
+            starts.shift();
+            weeks.push(week);
+            const newWeek = [];
+            handleSplitWeeks(starts, newWeek, callback);
+        }
+    }
+    else if (starts.length === 0) {
+        weeks.push(week);
+        return;
+    }
+};
+const weekContainer = (starts) => {
+    let week = [];
+    handleSplitWeeks(starts, week, (data) => {
+        // data === week seems truthy
+        // console.log('DATA: ', data, 'WEEK: ', week);
+        weeks.push(data.week);
+    });
+    return weeks;
+};
 const allPitchersAction = async (pitchers) => {
     const startsByPitcher = [];
     await Promise.all(pitchers.map(async (pitcher) => {
         const probStarts = await Promise.resolve(scrapeStarts(pitcher));
         startsByPitcher.push({ name: pitcher.fullName, probStarts });
     }));
-    const allStarts = [];
+    let allStarts = [];
     startsByPitcher.filter((pitcher) => pitcher.probStarts.length > 0).map((pitcher) => pitcher.probStarts.sort((a, b) => a.jsDate - b.jsDate).forEach((start) => allStarts.push(start)));
+    const morphAllStarts = (allStarts) => {
+        return allStarts.filter((element, index, array) => index === array.findIndex((ele) => (ele.gameId === element.gameId))).sort((a, b) => a.jsDate - b.jsDate);
+    };
+    allStarts = allStarts.filter((element, index, array) => index === array.findIndex((ele) => (ele.gameId === element.gameId))).sort((a, b) => a.jsDate - b.jsDate);
+    const splitWeeks = weekContainer(allStarts);
+    console.log('SPLIT WEEKS: ', splitWeeks);
     return {
         startsByPitcher,
-        allStarts: allStarts.filter((element, index, array) => index === array.findIndex((ele) => (ele.gameId === element.gameId))).sort((a, b) => a.jsDate - b.jsDate)
+        allStarts: morphAllStarts(allStarts)
     };
 };
 const scrapeStarts = async (pitcher) => {
@@ -39,6 +83,11 @@ const scrapeStarts = async (pitcher) => {
                 const home = xray.pitchers[1];
                 const game = words[0] + ' - ' + words[2];
                 const jsDate = new Date(words[2]);
+                let numDayInWeek = undefined;
+                if (jsDate.getDay() === 0)
+                    numDayInWeek = 7;
+                else
+                    numDayInWeek = jsDate.getDay();
                 let dayTime = new Date(words[2]).toUTCString().slice(0, 5);
                 let count = 0;
                 if (xray.UTC) {
@@ -61,7 +110,8 @@ const scrapeStarts = async (pitcher) => {
                     UTC: xray.UTC,
                     gameId,
                     jsDate,
-                    count
+                    count,
+                    numDayInWeek
                 };
                 probStarts.push(crafted);
             }
@@ -70,7 +120,6 @@ const scrapeStarts = async (pitcher) => {
     ;
     return probStarts;
 };
-const myStarts = await allPitchersAction(pitchers);
 function Game(start) {
     this.count = start.count;
     this.dayTime = start.dayTime;
@@ -78,9 +127,6 @@ function Game(start) {
     this.away = start.away;
     this.gameId = start.gameId;
 }
+const myStarts = await allPitchersAction(pitchers);
+// console.log(myStarts);
 const starts = {};
-myStarts.allStarts.map((start) => {
-    const tableInfo = new Game(start);
-    starts[start.game] = tableInfo;
-});
-console.table(starts);
