@@ -75,6 +75,16 @@ const scrapeStarts = async (pitcher) => {
     return probStarts;
 };
 const myStarts = await allPitchersAction(pitchers);
-let startsCount = 0;
-myStarts.allStartsNoDupes.map((start) => startsCount += start.count);
-console.log(myStarts.allStartsNoDupes);
+function Game(start) {
+    this.count = start.count;
+    this.dayTime = start.dayTime;
+    this.home = start.home;
+    this.away = start.away;
+    this.gameId = start.gameId;
+}
+const starts = {};
+myStarts.allStartsNoDupes.map((start) => {
+    const tableInfo = new Game(start);
+    starts[start.game] = tableInfo;
+});
+console.table(starts);
