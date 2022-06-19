@@ -7,21 +7,21 @@ const pitchers = team.pitchers;
 const allPitchersAction = async (pitchers) => {
     const startsByPitcher = [];
     await Promise.all(pitchers.map(async (pitcher) => {
-        const probStarts = await Promise.resolve(figureOutStarts(pitcher));
+        const probStarts = await Promise.resolve(scrapeStarts(pitcher));
         startsByPitcher.push({ name: pitcher.fullName, probStarts });
     }));
-    let allStarts = [];
+    const allStarts = [];
     startsByPitcher.filter((pitcher) => pitcher.probStarts.length > 0).map((pitcher) => pitcher.probStarts.sort((a, b) => a.jsDate - b.jsDate).forEach((start) => allStarts.push(start)));
     allStarts.sort((a, b) => {
         return a.jsDate - b.jsDate;
     });
-    allStarts = allStarts.filter((element, index, array) => index === array.findIndex((ele) => (ele.gameId === element.gameId)));
+    const allStartsNoDupes = allStarts.filter((element, index, array) => index === array.findIndex((ele) => (ele.gameId === element.gameId)));
     return {
         startsByPitcher,
-        allStarts
+        allStartsNoDupes
     };
 };
-const figureOutStarts = async (pitcher) => {
+const scrapeStarts = async (pitcher) => {
     const probStarts = [];
     const starts = pitcher.starterStatusByProGame;
     for (const gameId in starts) {
@@ -51,20 +51,10 @@ const figureOutStarts = async (pitcher) => {
                 else {
                     dayTime += 'TBD';
                 }
-                // if (pitchers.filter((pitcher: any) => pitcher.fullName === away)) {
-                //   count += 1;
-                // }
-                // if (pitchers.filter((pitcher: any) => pitcher.fullName === home)) {
-                //   count += 1;
-                // }
-                // if (pitchers.find(({ fullName }: any) => fullName === home != undefined)) count += 1;
-                // if (pitchers.find(({ fullName }: any) => fullName === away != undefined)) count += 1;
                 if (pitchers.findIndex(pitcher => pitcher.fullName === home) != -1) {
-                    // console.log('HOME: ', pitcher.fullName, home, game);
                     count += 1;
                 }
                 if (pitchers.findIndex(pitcher => pitcher.fullName === away) != -1) {
-                    // console.log('AWAY: ', pitcher.fullName, away, game);
                     count += 1;
                 }
                 const crafted = {
@@ -84,11 +74,7 @@ const figureOutStarts = async (pitcher) => {
     ;
     return probStarts;
 };
-const formatResponse = (result) => {
-    result.date = new Date(result.UTC).toUTCString().slice(0, 5) + new Date(result.UTC).toLocaleString();
-    return result;
-};
 const myStarts = await allPitchersAction(pitchers);
 let startsCount = 0;
-myStarts.allStarts.map((start) => startsCount += start.count);
-console.log(startsCount, myStarts.allStarts.length);
+myStarts.allStartsNoDupes.map((start) => startsCount += start.count);
+console.log(myStarts.allStartsNoDupes);

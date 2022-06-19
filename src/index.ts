@@ -11,11 +11,11 @@ const pitchers: any[] = team.pitchers;
 const allPitchersAction = async (pitchers: any[]) => {
   const startsByPitcher = [] as any[];
   await Promise.all(pitchers.map(async (pitcher: any) => {
-    const probStarts = await Promise.resolve(figureOutStarts(pitcher));
+    const probStarts = await Promise.resolve(scrapeStarts(pitcher));
     startsByPitcher.push({ name: pitcher.fullName, probStarts });
   }));
 
-  let allStarts = [] as any[];
+  const allStarts = [] as any[];
 
   startsByPitcher.filter((pitcher: any) => pitcher.probStarts.length > 0).map((pitcher: any) => pitcher.probStarts.sort((a, b) => a.jsDate - b.jsDate).forEach((start: any) => allStarts.push(start)));
 
@@ -23,18 +23,18 @@ const allPitchersAction = async (pitchers: any[]) => {
     return a.jsDate - b.jsDate;
   });
 
-  allStarts = allStarts.filter((element, index, array) => index === array.findIndex((ele) => (
+  const allStartsNoDupes = allStarts.filter((element, index, array) => index === array.findIndex((ele) => (
     ele.gameId === element.gameId
   )));
 
 
   return {
     startsByPitcher,
-    allStarts
+    allStartsNoDupes
   };
 };
 
-const figureOutStarts = async (pitcher: Player) => {
+const scrapeStarts = async (pitcher: Player) => {
   const probStarts = [] as any[];
   const starts = pitcher.starterStatusByProGame;
   for (const gameId in starts) {
@@ -50,6 +50,7 @@ const figureOutStarts = async (pitcher: Player) => {
       });
 
       if (xray.pitchers.length > 0) {
+
         const words = xray.title.split(' - ');
         const away = xray.pitchers[0];
         const home = xray.pitchers[1];
@@ -62,20 +63,10 @@ const figureOutStarts = async (pitcher: Player) => {
         } else {
           dayTime += 'TBD';
         }
-        // if (pitchers.filter((pitcher: any) => pitcher.fullName === away)) {
-        //   count += 1;
-        // }
-        // if (pitchers.filter((pitcher: any) => pitcher.fullName === home)) {
-        //   count += 1;
-        // }
-        // if (pitchers.find(({ fullName }: any) => fullName === home != undefined)) count += 1;
-        // if (pitchers.find(({ fullName }: any) => fullName === away != undefined)) count += 1;
         if (pitchers.findIndex(pitcher => pitcher.fullName === home) != -1) {
-          // console.log('HOME: ', pitcher.fullName, home, game);
           count += 1;
         }
         if (pitchers.findIndex(pitcher => pitcher.fullName === away) != -1) {
-          // console.log('AWAY: ', pitcher.fullName, away, game);
           count += 1;
         }
         const crafted = {
@@ -91,22 +82,16 @@ const figureOutStarts = async (pitcher: Player) => {
         probStarts.push(crafted);
       }
     }
+
   };
   return probStarts;
-};
-
-const formatResponse = (result: any) => {
-  result.date = new Date(result.UTC).toUTCString().slice(0, 5) + new Date(result.UTC).toLocaleString();
-  return result;
 };
 
 const myStarts = await allPitchersAction(pitchers);
 
 let startsCount = 0;
-myStarts.allStarts.map((start) => startsCount += start.count);
+myStarts.allStartsNoDupes.map((start) => startsCount += start.count);
 
-console.log(startsCount, myStarts.allStarts.length);
-
-
+console.log(myStarts.allStartsNoDupes);
 
 export { };
