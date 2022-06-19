@@ -16,7 +16,8 @@ const allPitchersAction = async (pitchers: any[]) => {
   }));
 
   const allStarts = [] as any[];
-  startsByPitcher.filter((pitcher: any) => pitcher.probStarts.length > 0).map((pitcher: any) => pitcher.probStarts.forEach((start: any) => allStarts.push(start)));
+
+  startsByPitcher.filter((pitcher: any) => pitcher.probStarts.length > 0).map((pitcher: any) => pitcher.probStarts.sort((a, b) => a.jsDate - b.jsDate).forEach((start: any) => allStarts.push(start)));
 
   allStarts.sort((a, b) => {
     return a.jsDate - b.jsDate;
@@ -75,9 +76,6 @@ const formatResponse = (result: any) => {
 const myStarts = await allPitchersAction(pitchers);
 
 console.log(myStarts.allStarts);
-
-
-
 
 
 export { };
