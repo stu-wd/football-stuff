@@ -5,27 +5,24 @@ const team = await getTeam();
 const hitters = team.hitters;
 const pitchers = team.pitchers;
 const weeks = [];
-const handleSplitWeeks = (starts, week, callback) => {
+const handleSplitWeeks = (starts, week) => {
     if (starts.length > 0) {
         if (starts[0].numDayInWeek != 7) {
-            console.log('1st');
             week.push(starts[0]);
             starts.shift();
-            handleSplitWeeks(starts, week, callback);
+            handleSplitWeeks(starts, week);
         }
         else if (starts[0].numDayInWeek === 7 && starts[1].numDayInWeek === 7) {
-            console.log('2nd');
             week.push(starts[0]);
             starts.shift();
-            handleSplitWeeks(starts, week, callback);
+            handleSplitWeeks(starts, week);
         }
         else if (starts[0].numDayInWeek === 7 && starts[1].numDayInWeek != 7) {
-            console.log('3rd');
             week.push(starts[0]);
             starts.shift();
             weeks.push(week);
             const newWeek = [];
-            handleSplitWeeks(starts, newWeek, callback);
+            handleSplitWeeks(starts, newWeek);
         }
     }
     else if (starts.length === 0) {
@@ -35,11 +32,7 @@ const handleSplitWeeks = (starts, week, callback) => {
 };
 const weekContainer = (starts) => {
     let week = [];
-    handleSplitWeeks(starts, week, (data) => {
-        // data === week seems truthy
-        // console.log('DATA: ', data, 'WEEK: ', week);
-        weeks.push(data.week);
-    });
+    handleSplitWeeks(starts, week);
     return weeks;
 };
 const allPitchersAction = async (pitchers) => {
@@ -51,11 +44,9 @@ const allPitchersAction = async (pitchers) => {
     let allStarts = [];
     startsByPitcher.filter((pitcher) => pitcher.probStarts.length > 0).map((pitcher) => pitcher.probStarts.sort((a, b) => a.jsDate - b.jsDate).forEach((start) => allStarts.push(start)));
     const morphAllStarts = (allStarts) => {
-        return allStarts.filter((element, index, array) => index === array.findIndex((ele) => (ele.gameId === element.gameId))).sort((a, b) => a.jsDate - b.jsDate);
+        const morphed = allStarts.filter((element, index, array) => index === array.findIndex((ele) => (ele.gameId === element.gameId))).sort((a, b) => a.jsDate - b.jsDate);
+        return weekContainer(morphed);
     };
-    allStarts = allStarts.filter((element, index, array) => index === array.findIndex((ele) => (ele.gameId === element.gameId))).sort((a, b) => a.jsDate - b.jsDate);
-    const splitWeeks = weekContainer(allStarts);
-    console.log('SPLIT WEEKS: ', splitWeeks);
     return {
         startsByPitcher,
         allStarts: morphAllStarts(allStarts)
@@ -128,5 +119,17 @@ function Game(start) {
     this.gameId = start.gameId;
 }
 const myStarts = await allPitchersAction(pitchers);
-// console.log(myStarts);
-const starts = {};
+// console.log(myStarts.allStarts);
+// myStarts.allStarts.map((start) => {
+//   const tableInfo = new Game(start);
+//   starts[start.game] = tableInfo;
+// });
+const tableStarts = myStarts.allStarts.map((week, bigIndex) => {
+    const starts = {};
+    week.map((start, index) => {
+        console.log(bigIndex, start);
+        starts[bigIndex] = new Game(start);
+    });
+    return starts;
+});
+console.log('TABLE: ', tableStarts);
