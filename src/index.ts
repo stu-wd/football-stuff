@@ -9,12 +9,22 @@ const hitters: Player[] = team.hitters;
 const pitchers: any[] = team.pitchers;
 
 const allPitchersAction = async (pitchers: any[]) => {
-  const myFutureStarts = [] as any[];
+  const startsByPitcher = [] as any[];
   await Promise.all(pitchers.map(async (pitcher: any) => {
     const probStarts = await Promise.resolve(figureOutStarts(pitcher));
-    myFutureStarts.push({ name: pitcher.fullName, probStarts });
+    startsByPitcher.push({ name: pitcher.fullName, probStarts });
   }));
-  return myFutureStarts;
+
+  const allStarts = [] as any[];
+  startsByPitcher.filter((pitcher: any) => pitcher.probStarts.length > 0).map((pitcher: any) => pitcher.probStarts.forEach((start: any) => allStarts.push(start)));
+
+  allStarts.sort((a, b) => {
+    return a.jsDate - b.jsDate;
+  });
+  return {
+    startsByPitcher,
+    allStarts
+  };
 };
 
 const figureOutStarts = async (pitcher: Player) => {
@@ -34,15 +44,21 @@ const figureOutStarts = async (pitcher: Player) => {
 
       if (xray.pitchers.length > 0) {
         const words = xray.title.split(' - ');
-        let date = undefined;
+        let jsDate = new Date(words[2]);
+        let dayTime = new Date(words[2]).toUTCString().slice(0, 5);
         if (xray.UTC) {
-          date = new Date(xray.UTC).toUTCString().slice(0, 5) + new Date(xray.UTC).toLocaleString();
+          dayTime += new Date(xray.UTC).toLocaleString().split(', ')[1];
+        } else {
+          dayTime += 'TBD';
         }
         const crafted = {
           game: words[0] + ' - ' + words[2],
-          date: date,
-          home: xray.pitchers[0],
-          away: xray.pitchers[1]
+          dayTime,
+          away: xray.pitchers[0],
+          home: xray.pitchers[1],
+          UTC: xray.UTC,
+          gameId,
+          jsDate
         };
         probStarts.push(crafted);
       }
@@ -56,9 +72,11 @@ const formatResponse = (result: any) => {
   return result;
 };
 
-const myFutureStarts = await allPitchersAction(pitchers);
+const myStarts = await allPitchersAction(pitchers);
 
-myFutureStarts.map((start: any) => console.log(start));
+console.log(myStarts.allStarts);
+
+
 
 
 

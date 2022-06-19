@@ -5,12 +5,20 @@ const team = await getTeam();
 const hitters = team.hitters;
 const pitchers = team.pitchers;
 const allPitchersAction = async (pitchers) => {
-    const myFutureStarts = [];
+    const startsByPitcher = [];
     await Promise.all(pitchers.map(async (pitcher) => {
         const probStarts = await Promise.resolve(figureOutStarts(pitcher));
-        myFutureStarts.push({ name: pitcher.fullName, probStarts });
+        startsByPitcher.push({ name: pitcher.fullName, probStarts });
     }));
-    return myFutureStarts;
+    const allStarts = [];
+    startsByPitcher.filter((pitcher) => pitcher.probStarts.length > 0).map((pitcher) => pitcher.probStarts.forEach((start) => allStarts.push(start)));
+    allStarts.sort((a, b) => {
+        return a.jsDate - b.jsDate;
+    });
+    return {
+        startsByPitcher,
+        allStarts
+    };
 };
 const figureOutStarts = async (pitcher) => {
     const probStarts = [];
@@ -30,15 +38,22 @@ const figureOutStarts = async (pitcher) => {
             });
             if (xray.pitchers.length > 0) {
                 const words = xray.title.split(' - ');
-                let date = undefined;
+                let jsDate = new Date(words[2]);
+                let dayTime = new Date(words[2]).toUTCString().slice(0, 5);
                 if (xray.UTC) {
-                    date = new Date(xray.UTC).toUTCString().slice(0, 5) + new Date(xray.UTC).toLocaleString();
+                    dayTime += new Date(xray.UTC).toLocaleString().split(', ')[1];
+                }
+                else {
+                    dayTime += 'TBD';
                 }
                 const crafted = {
                     game: words[0] + ' - ' + words[2],
-                    date: date,
-                    home: xray.pitchers[0],
-                    away: xray.pitchers[1]
+                    dayTime,
+                    away: xray.pitchers[0],
+                    home: xray.pitchers[1],
+                    UTC: xray.UTC,
+                    gameId,
+                    jsDate
                 };
                 probStarts.push(crafted);
             }
@@ -51,5 +66,5 @@ const formatResponse = (result) => {
     result.date = new Date(result.UTC).toUTCString().slice(0, 5) + new Date(result.UTC).toLocaleString();
     return result;
 };
-const myFutureStarts = await allPitchersAction(pitchers);
-myFutureStarts.map((start) => console.log(start));
+const myStarts = await allPitchersAction(pitchers);
+console.log(myStarts.allStarts);
