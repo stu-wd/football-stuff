@@ -19,18 +19,11 @@ const allPitchersAction = async (pitchers: any[]) => {
 
   startsByPitcher.filter((pitcher: any) => pitcher.probStarts.length > 0).map((pitcher: any) => pitcher.probStarts.sort((a, b) => a.jsDate - b.jsDate).forEach((start: any) => allStarts.push(start)));
 
-  allStarts.sort((a, b) => {
-    return a.jsDate - b.jsDate;
-  });
-
-  const allStartsNoDupes = allStarts.filter((element, index, array) => index === array.findIndex((ele) => (
-    ele.gameId === element.gameId
-  )));
-
-
   return {
     startsByPitcher,
-    allStartsNoDupes
+    allStarts: allStarts.filter((element, index, array) => index === array.findIndex((ele) => (
+      ele.gameId === element.gameId
+    ))).sort((a, b) => a.jsDate - b.jsDate)
   };
 };
 
@@ -99,17 +92,12 @@ function Game(start) {
 
 const starts = {};
 
-myStarts.allStartsNoDupes.map((start) => {
+myStarts.allStarts.map((start) => {
   const tableInfo = new Game(start);
   starts[start.game] = tableInfo;
 });
 
 console.table(starts);
-
-
-
-
-
 
 
 export { };

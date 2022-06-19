@@ -12,13 +12,9 @@ const allPitchersAction = async (pitchers) => {
     }));
     const allStarts = [];
     startsByPitcher.filter((pitcher) => pitcher.probStarts.length > 0).map((pitcher) => pitcher.probStarts.sort((a, b) => a.jsDate - b.jsDate).forEach((start) => allStarts.push(start)));
-    allStarts.sort((a, b) => {
-        return a.jsDate - b.jsDate;
-    });
-    const allStartsNoDupes = allStarts.filter((element, index, array) => index === array.findIndex((ele) => (ele.gameId === element.gameId)));
     return {
         startsByPitcher,
-        allStartsNoDupes
+        allStarts: allStarts.filter((element, index, array) => index === array.findIndex((ele) => (ele.gameId === element.gameId))).sort((a, b) => a.jsDate - b.jsDate)
     };
 };
 const scrapeStarts = async (pitcher) => {
@@ -83,7 +79,7 @@ function Game(start) {
     this.gameId = start.gameId;
 }
 const starts = {};
-myStarts.allStartsNoDupes.map((start) => {
+myStarts.allStarts.map((start) => {
     const tableInfo = new Game(start);
     starts[start.game] = tableInfo;
 });
