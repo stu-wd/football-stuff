@@ -31,5 +31,9 @@
     "luxon": "^2.4.0",
     "x-ray": "^2.3.4",
     "xray": "^0.5.1"
+  },
+  "devDependencies": {
+    "@types/luxon": "^2.3.2",
+    "@types/node": "^18.0.0"
   }
 }
