@@ -1,4 +1,5 @@
 {
+  "name": "fantasy-baseball",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
