@@ -1,10 +1,10 @@
 import axios from 'axios';
-import espn from './credentials';
+import espn from '../credentials';
+const team = {
+    pitchers: [],
+    hitters: [],
+};
 const getTeam = async () => {
-    const team = {
-        pitchers: [],
-        hitters: [],
-    };
     await axios
         .get(espn.ENDPOINT, espn.COOKIE)
         .then((res) => {
@@ -21,7 +21,10 @@ const getTeam = async () => {
                 : team.hitters.push(player);
         });
     })
-        .catch((err) => console.log(err));
-    return team;
+        .catch((err) => console.log(`Error: ${err}`));
+    return {
+        hitters: team.hitters,
+        pitchers: team.pitchers
+    };
 };
 export { getTeam };

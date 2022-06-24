@@ -13,3 +13,20 @@ export interface Team {
   pitchers: Player[],
   hitters: Player[];
 }
+
+export interface Start {
+  game: string,
+  dayTime: string,
+  away: string,
+  home: string,
+  UTC: string | undefined,
+  gameId: string,
+  jsDate: Date,
+  count: number,
+  numDayInWeek: number;
+}
+
+export interface StartsByPitcher {
+  name: string,
+  probStarts: Start[];
+}

@@ -1,13 +1,13 @@
 import axios from 'axios';
-import espn from './credentials';
+import espn from '../credentials';
 import { Player, Team } from '../models';
 
-const getTeam = async () => {
-  const team: Team = {
-    pitchers: [] as Player[],
-    hitters: [] as Player[],
-  };
+const team: Team = {
+  pitchers: [] as Player[],
+  hitters: [] as Player[],
+};
 
+const getTeam = async () => {
   await axios
     .get(espn.ENDPOINT, espn.COOKIE)
     .then((res) => {
@@ -24,8 +24,12 @@ const getTeam = async () => {
             : team.hitters.push(player);
         });
     })
-    .catch((err) => console.log(err));
-  return team as Team;
+    .catch((err) => console.log(`Error: ${err}`));
+
+  return {
+    hitters: team.hitters as Player[],
+    pitchers: team.pitchers as Player[]
+  };
 
 };
 
