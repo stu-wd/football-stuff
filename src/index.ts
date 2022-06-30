@@ -10,6 +10,9 @@ const x = xray();
 const { pitchers, hitters }: Team = await getTeam();
 const myStarts = await setMyStarts(pitchers);
 
+console.log(myStarts.startsByWeek);
+
+
 
 
 
