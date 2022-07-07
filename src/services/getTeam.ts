@@ -7,7 +7,7 @@ const team: Team = {
   hitters: [] as Player[],
 };
 
-const getTeam = async () => {
+const getTeam = async (): Promise<Team> => {
   await axios
     .get(espn.ENDPOINT, espn.COOKIE)
     .then((res) => {

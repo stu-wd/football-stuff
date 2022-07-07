@@ -30,3 +30,8 @@ export interface StartsByPitcher {
   name: string,
   probStarts: Start[];
 }
+
+export interface MyStarts {
+  startsByPitcher: StartsByPitcher[],
+  startsByWeek: Start[][];
+}
