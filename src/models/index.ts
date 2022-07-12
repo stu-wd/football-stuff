@@ -35,3 +35,19 @@ export interface MyStarts {
   startsByPitcher: StartsByPitcher[],
   startsByWeek: Start[][];
 }
+
+export class TableEntry {
+  constructor(start) {
+    this.game = start.game;
+    this.dayTime = start.dayTime;
+    this.home = start.home;
+    this.away = start.away;
+    this.count = start.count;
+  }
+  count: number;
+  dayTime: string;
+  home: string;
+  away: string;
+  game: string;
+}
+

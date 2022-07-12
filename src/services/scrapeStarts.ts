@@ -24,7 +24,7 @@ const scrapeStarts = async (pitcher: Player, pitchers: Player[]): Promise<Start[
       const words = xray.title.split(' - ');
       const away = xray.pitchers[0];
       const home = xray.pitchers[1];
-      const game = words[0] + ' - ' + words[2];
+      const game = words[0];
       const jsDate = new Date(words[2]);
       let numDayInWeek = undefined as number;
       if (jsDate.getDay() === 0) numDayInWeek = 7;

@@ -1,36 +1,27 @@
 import axios from 'axios';
 import espn from '../credentials';
 import { Player, Team } from '../models';
+import { setPlayerEntry } from './setTeam';
 
-const team: Team = {
-  pitchers: [] as Player[],
-  hitters: [] as Player[],
-};
 
-const getTeam = async (): Promise<Team> => {
+
+const getTeam = async (teamId): Promise<Team> => {
+  const team: Team = {
+    pitchers: [] as Player[],
+    hitters: [] as Player[],
+  };
   await axios
-    .get(espn.ENDPOINT, espn.COOKIE)
+    .get(espn.ENDPOINTMAKER(teamId), espn.COOKIE)
     .then((res) => {
       res.data.roster.entries
-        .map((entry: any) => entry.playerPoolEntry.player).map((player: any): Player => {
-          const { defaultPositionId, eligibleSlots, fullName, gamesPlayedByPosition, id, injuryStatus, proTeamId, starterStatusByProGame, stats } = player;
-          return {
-            defaultPositionId, eligibleSlots, fullName, gamesPlayedByPosition, id, injuryStatus, proTeamId, starterStatusByProGame
-          };
-        })
-        .map((player: Player) => {
+        .map((entry: any) => entry.playerPoolEntry.player).map((player: any): Player => setPlayerEntry(player)).map((player: Player) => {
           player.defaultPositionId === 1 || player.defaultPositionId === 11
             ? team.pitchers.push(player)
             : team.hitters.push(player);
         });
     })
     .catch((err) => console.log(`Error: ${err}`));
-
-  return {
-    hitters: team.hitters as Player[],
-    pitchers: team.pitchers as Player[]
-  };
-
+  return team;
 };
 
 export { getTeam };
