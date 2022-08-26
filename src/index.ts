@@ -1,6 +1,6 @@
+#!/usr/bin/env node
+
 import { getWeekMatchup } from './services/getPitcherTable';
-
-
 
 await getWeekMatchup();
 
