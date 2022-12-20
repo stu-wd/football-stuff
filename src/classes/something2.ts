@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { createHistogram } from 'perf_hooks';
 import { EspnBoxscore, EspnTeam } from '../models/espn-api-responses';
-import { Matchup, TeamSchema } from '../models/my-league';
-import { checksIfTaxi, fetchUrl } from '../services';
+import { Matchup, TeamSchema, WinLoss } from '../models/my-league';
+import { checksIfTaxi, createAllPlayMap, fetchUrl } from '../services';
 import Team from './team';
 
 export default class something2 {
@@ -13,6 +14,7 @@ export default class something2 {
 
   public teams: Record<string, TeamSchema>;
   public matchups: Record<string, Matchup[]>;
+  private allPlayMap: Record<string, WinLoss>;
 
   constructor(leagueId: number, year: number) {
     this.leagueId = leagueId;
@@ -26,6 +28,9 @@ export default class something2 {
     this.setTeams();
     this.setMatchups();
     this.setMedianRecords();
+    this.setCombinedRecords();
+    this.setAllPlayRecords();
+    console.log(this.teams['1'].records.myAllPlay);
   }
 
   private async getBoxscore(): Promise<EspnBoxscore> {
@@ -101,11 +106,36 @@ export default class something2 {
       matchups.forEach((scorecard, index) => {
         const middleIndex = Math.ceil(matchups.length / 2);
         const { teamId } = scorecard;
+        const team = this.teams[`${teamId}`];
         if (index < middleIndex) {
-          this.teams[`${scorecard.teamId}`].records.myMedian.wins += 1;
+          team.records.myMedian.wins += 1;
         } else {
-          this.teams[`${scorecard.teamId}`].records.myMedian.losses += 1;
+          team.records.myMedian.losses += 1;
         }
+      });
+    });
+  }
+
+  private setCombinedRecords() {
+    Object.keys(this.teams).forEach((teamId: string) => {
+      const team = this.teams[teamId];
+      team.records.myCombined.wins =
+        team.records.myWeekly.wins + team.records.myMedian.wins;
+
+      team.records.myCombined.losses =
+        team.records.myWeekly.losses + team.records.myMedian.losses;
+    });
+  }
+
+  private setAllPlayRecords() {
+    this.allPlayMap = createAllPlayMap(this.teams);
+    console.log(this.allPlayMap);
+    Object.keys(this.matchups).forEach((weekId: string) => {
+      const matchups = this.matchups[weekId];
+      matchups.forEach((scorecard, index) => {
+        const { teamId } = scorecard;
+        const team = this.teams[`${teamId}`];
+        team.records.myAllPlay[weekId] = this.allPlayMap[`${index + 1}`];
       });
     });
   }

@@ -27,9 +27,9 @@ export interface RecordTypeSchema {
 }
 
 export interface Matchup {
-  teamId: number,
-  score: number,
-  opponentId: number
+  teamId: number;
+  score: number;
+  opponentId: number;
 }
 
 export interface WinLoss {
@@ -38,10 +38,10 @@ export interface WinLoss {
 }
 
 export interface TeamVariables {
-    awayTeam: TeamSchema;
-    homeTeam: TeamSchema;
+  awayTeam: TeamSchema;
+  homeTeam: TeamSchema;
 
-    id: number;
+  id: number;
 
   awayId: number;
   awayPoints: number;
@@ -114,13 +114,3 @@ export interface TeamVariables {
 //     },
 //   },
 // };
-
-export const createAllPlayMap = (teams: number) => {
-  const allPlayMap: Record<string, any> = {}
-  for (let i = 0; i < teams; i++) {
-    const rank = i + 1;
-    allPlayMap[rank] = { wins: teams - rank, losses: i };
-  }
-  return allPlayMap;
-}
-

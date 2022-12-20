@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { RecordsSchema, WinLoss } from '../models/my-league';
+import { RecordsSchema, TeamSchema, WinLoss } from '../models/my-league';
 
 export const fetchUrl = async (url: string): Promise<any> => {
   try {
@@ -21,6 +21,16 @@ export const checksIfTaxi = (value: string | number) => {
     default:
       break;
   }
+};
+
+export const createAllPlayMap = (teams: Record<string, TeamSchema>) => {
+  const count = Object.keys(teams).length;
+  const allPlayMap: Record<string, any> = {};
+  for (let i = 0; i < count; i++) {
+    const rank = i + 1;
+    allPlayMap[rank] = { wins: count - rank, losses: i };
+  }
+  return allPlayMap;
 };
 
 // const createEmptyWinLoss = (
@@ -57,7 +67,7 @@ export const checksIfTaxi = (value: string | number) => {
 // export const createSchedule = (): Record<string, number> => {
 //     const weeks = 14;
 //     const schedule: Record<string, number> = {};
-  
+
 //     for (let week = 0; week < weeks; week++) {
 //       const weekId = week + 1;
 //       schedule[`${weekId}`] = 0;
