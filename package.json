@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "axios": "^0.27.2",
+    "espn-fantasy-football-api": "^0.16.1",
     "luxon": "^2.4.0",
     "x-ray": "^2.3.4"
   },
