@@ -12,12 +12,13 @@ export interface TeamSchema {
 
 export interface RecordsSchema {
   myWeekly: WinLoss;
-  myMedian?: WinLoss;
-  myCombined?: WinLoss;
-  myCumulative?: Record<string, WinLoss>;
-  myAllPlay?: Record<string, WinLoss>;
-  pastOpponents?: RecordTypeSchema;
-  futureOpponents?: RecordTypeSchema;
+  myMedian: WinLoss;
+  myCombined: WinLoss;
+  myCumulative: Record<string, WinLoss>;
+  myAllPlayOverall: WinLoss;
+  myAllPlayByWeek: Record<string, WinLoss>;
+  pastOpponents: RecordTypeSchema;
+  futureOpponents: RecordTypeSchema;
 }
 
 export interface RecordTypeSchema {
@@ -37,80 +38,35 @@ export interface WinLoss {
   losses: number;
 }
 
-export interface TeamVariables {
-  awayTeam: TeamSchema;
-  homeTeam: TeamSchema;
+// export interface TeamVariables {
+//   awayTeam: TeamSchema;
+//   homeTeam: TeamSchema;
 
-  id: number;
+//   id: number;
 
-  awayId: number;
-  awayPoints: number;
-  awayWins: number;
-  awayLosses: number;
-  awayPrevWins: number;
-  awayPrevLosses: number;
+//   awayId: number;
+//   awayPoints: number;
+//   awayWins: number;
+//   awayLosses: number;
+//   awayPrevWins: number;
+//   awayPrevLosses: number;
 
-  homeId: number;
-  homePoints: number;
-  homeWins: number;
-  homeLosses: number;
-  homePrevWins: number;
-  homePrevLosses: number;
+//   homeId: number;
+//   homePoints: number;
+//   homeWins: number;
+//   homeLosses: number;
+//   homePrevWins: number;
+//   homePrevLosses: number;
 
-  awayFutureWins: number;
-  awayFutureLosses: number;
-  homeFutureWins: number;
-  homeFutureLosses: number;
+//   awayFutureWins: number;
+//   awayFutureLosses: number;
+//   homeFutureWins: number;
+//   homeFutureLosses: number;
 
-  homeMedianWins: number;
-  homeMedianLosses: number;
-  awayMedianLosses: number;
-  awayMedianWins: number;
+//   homeMedianWins: number;
+//   homeMedianLosses: number;
+//   awayMedianLosses: number;
+//   awayMedianWins: number;
 
-  matchupPeriodId: number;
-}
-
-// const createRecordObjects = (start: number, entries: number): Record<string, WinLoss> => {
-//   const result: Record<string, WinLoss> = {};
-//   for (let i = start; i < entries; i++) {
-//     result[`${i}`] = { wins: 0, losses: 0 }
-//   }
-//   return result;
+//   matchupPeriodId: number;
 // }
-
-// const createSchedule = () => {
-//   const weeks = 14;
-//   const schedule: Record<string, number> = {};
-
-//   for (let week = 0; week < weeks; week++) {
-//     const weekId = week + 1;
-//     schedule[`${weekId}`] = 0;
-//   }
-//   return schedule;
-// }
-
-// export const TeamStarter: TeamSchema = {
-//   teamName: '',
-//   id: undefined,
-//   logo: '',
-//   schedule: createSchedule(),
-//   // weeklyDeviation: {},
-//   weeklyRank: {},
-//   records: {
-//     myWeekly: { wins: 0, losses: 0 },
-//     myMedian: { wins: 0, losses: 0 },
-//     myCombined: { wins: 0, losses: 0 },
-//     myCumulative: createRecordObjects(0, 15),
-//     myAllPlay: createRecordObjects(1, 15),
-//     futureOpponents: {
-//       weekly: { wins: 0, losses: 0 },
-//       median: { wins: 0, losses: 0 },
-//       combined: { wins: 0, losses: 0 },
-//     },
-//     pastOpponents: {
-//       weekly: { wins: 0, losses: 0 },
-//       median: { wins: 0, losses: 0 },
-//       combined: { wins: 0, losses: 0 },
-//     },
-//   },
-// };

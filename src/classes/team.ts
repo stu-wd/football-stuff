@@ -30,8 +30,9 @@ export default class Team {
       myWeekly: { wins: 0, losses: 0 },
       myMedian: { wins: 0, losses: 0 },
       myCombined: { wins: 0, losses: 0 },
+      myAllPlayOverall: { wins: 0, losses: 0 },
       myCumulative: this.createEmptyWinLoss(0, 15),
-      myAllPlay: this.createEmptyWinLoss(1, 15),
+      myAllPlayByWeek: this.createEmptyWinLoss(1, 15),
       futureOpponents: {
         weekly: { wins: 0, losses: 0 },
         median: { wins: 0, losses: 0 },
@@ -59,7 +60,7 @@ export default class Team {
   private initializeEmptyObject(): Record<string, number> {
     const weeks = 14;
     const schedule: Record<string, number> = {};
-  
+
     for (let week = 0; week < weeks; week++) {
       const weekId = week + 1;
       schedule[`${weekId}`] = 0;

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { privateEncrypt } from 'crypto';
 import { createHistogram } from 'perf_hooks';
 import { EspnBoxscore, EspnTeam } from '../models/espn-api-responses';
 import { Matchup, TeamSchema, WinLoss } from '../models/my-league';
@@ -27,10 +28,13 @@ export default class something2 {
     await this.setBoxscore();
     this.setTeams();
     this.setMatchups();
+    this.setSchedule();
     this.setMedianRecords();
     this.setCombinedRecords();
-    this.setAllPlayRecords();
-    console.log(this.teams['1'].records.myAllPlay);
+    this.setAllPlayByWeekRecords();
+    this.setAllPlayOverallRecords();
+    this.setCumulativeRecords();
+    console.log(this.teams['1'].records.myCumulative);
   }
 
   private async getBoxscore(): Promise<EspnBoxscore> {
@@ -100,6 +104,18 @@ export default class something2 {
     this.matchups = this.createMatchups();
   }
 
+  private setSchedule() {
+    this.boxscore.schedule.forEach((matchup) => {
+      const { away, home, matchupPeriodId } = matchup;
+      if (away && home && !checksIfTaxi(home.teamId) && matchupPeriodId <= 14) {
+        this.teams[`${away.teamId}`].schedule[`${matchupPeriodId}`] =
+          home.teamId;
+        this.teams[`${home.teamId}`].schedule[`${matchupPeriodId}`] =
+          away.teamId;
+      }
+    });
+  }
+
   private setMedianRecords() {
     Object.keys(this.matchups).forEach((weekId: string) => {
       const matchups: Matchup[] = this.matchups[weekId];
@@ -127,16 +143,67 @@ export default class something2 {
     });
   }
 
-  private setAllPlayRecords() {
+  private setAllPlayByWeekRecords() {
     this.allPlayMap = createAllPlayMap(this.teams);
-    console.log(this.allPlayMap);
     Object.keys(this.matchups).forEach((weekId: string) => {
       const matchups = this.matchups[weekId];
       matchups.forEach((scorecard, index) => {
         const { teamId } = scorecard;
         const team = this.teams[`${teamId}`];
-        team.records.myAllPlay[weekId] = this.allPlayMap[`${index + 1}`];
+        team.records.myAllPlayByWeek[weekId] = this.allPlayMap[`${index + 1}`];
       });
+    });
+  }
+
+  private setAllPlayOverallRecords() {
+    Object.keys(this.teams).forEach((teamId: string) => {
+      const team = this.teams[teamId];
+      const allPlays = team.records.myAllPlayByWeek;
+      Object.keys(allPlays).forEach((weekId: string) => {
+        const wins = allPlays[weekId].wins;
+        team.records.myAllPlayOverall.wins += wins;
+        const losses = allPlays[weekId].losses;
+        team.records.myAllPlayOverall.losses += losses;
+      });
+    });
+  }
+
+  private setCumulativeRecords() {
+    this.boxscore.schedule.forEach((matchup, index) => {
+      const { away, home, matchupPeriodId } = matchup;
+      if (away && home && !checksIfTaxi(home.teamId) && matchupPeriodId <= 14) {
+        const lastMatchup = matchupPeriodId - 1;
+
+        const awayCumulativeLast =
+          this.teams[`${away.teamId}`].records.myCumulative[`${lastMatchup}`];
+
+        const homeCumulativeLast =
+          this.teams[`${home.teamId}`].records.myCumulative[`${lastMatchup}`];
+
+        const awayCumulative =
+          this.teams[`${away.teamId}`].records.myCumulative[
+            `${matchupPeriodId}`
+          ];
+
+        const homeCumulative =
+          this.teams[`${home.teamId}`].records.myCumulative[
+            `${matchupPeriodId}`
+          ];
+
+        if (away.totalPoints > home.totalPoints) {
+          awayCumulative.wins = awayCumulativeLast.wins + 1;
+          awayCumulative.losses = awayCumulativeLast.losses;
+
+          homeCumulative.losses = homeCumulativeLast.losses + 1;
+          homeCumulative.wins = homeCumulativeLast.wins;
+        } else {
+          awayCumulative.losses = awayCumulativeLast.losses + 1;
+          awayCumulative.wins = awayCumulativeLast.wins;
+
+          homeCumulative.wins = homeCumulativeLast.wins + 1;
+          homeCumulative.losses = homeCumulativeLast.losses;
+        }
+      }
     });
   }
 }

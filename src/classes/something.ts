@@ -26,18 +26,18 @@
 //   private initialize() {
 //     this.setBoxscore();
 //     console.log('boxscore', this.boxscore);
-    
+
 //     this.setCurrentWeek();
 //     this.createTeamEntries();
 //     // this.setAllPlayMap();
 //     this.handleSetup();
 //     // console.log(this.teams['1'].weeklyRank);
-    
+
 //     this.setRecords();
 //     // this.setWeeklyRank();
 //     // this.setAllPlayRecords();
 //     // this.setWeeklyDeviation();
-    
+
 //   }
 
 //   setCurrentWeek() {
@@ -59,7 +59,7 @@
 //     matchups.forEach((scorecard, index) => {
 //       const { teamId } = scorecard;
 //       // console.log(index, weekId, { teamId }, this.teams[`${teamId}`].teamName);
-      
+
 //       const teamRank = index + 1;
 
 //       const team = this.teams[`${teamId}`];
@@ -67,7 +67,6 @@
 //       if (!team.weeklyRank[weekId]) {
 //         team.weeklyRank[weekId] = teamRank;
 //       }
-      
 
 //       // team.weeklyRank[weekId] = teamRank;
 //     })
@@ -160,7 +159,7 @@
 
 //         this.createMatchupEntry(variables);
 //         // this.setSchedule(variables);
-        
+
 //         if (isWeekFinished && this.matchups[weekId].length === 10) {
 //           this.setWeeklyRank(weekId);
 //           // this.setMedianRecords(weekId);
@@ -170,12 +169,11 @@
 //     });
 //   }
 
-
 //   setRecords() {
 //     console.log('set records');
 //     // this.setMedianRecords();
 //     // console.log(this.teams['1'].records.myMedian);
-    
+
 //     // this.setCombinedRecords();
 //     // this.setOpponentsRecords();
 //     // this.setFutureRecords();
@@ -192,10 +190,9 @@
 //       const team = this.teams[teamId];
 
 //       // console.log(team.weeklyRank);
-      
 
 //       for (let weekId = 1; weekId < this.currentWeek; weekId++) {
-//         team.records.myAllPlay[`${weekId}`] = this.allPlayMap[`${team.weeklyRank[`${weekId}`]}`]
+//         team.records.myAllPlayByWeek[`${weekId}`] = this.allPlayMap[`${team.weeklyRank[`${weekId}`]}`]
 //       }
 //     })
 
@@ -203,13 +200,13 @@
 //     //   const week = this.matchups[`${weekId}`];
 
 //     //   week.forEach((scorecard, index) => {
-        
+
 //     //     const rank = index + 1;
 //     //     const record = this.allPlayMap[`${rank}`];
 //     //     console.log(scorecard, rank, record, weekId);
 //     //     const { teamId } = scorecard;
-//     //     this.teams[teamId].records.myAllPlay[`${weekId}`] = this.allPlayMap[`${rank}`]
-//     //     console.log(this.teams[teamId].records.myAllPlay[`${weekId}`] === this.allPlayMap[`${rank}`])        
+//     //     this.teams[teamId].records.myAllPlayByWeek[`${weekId}`] = this.allPlayMap[`${rank}`]
+//     //     console.log(this.teams[teamId].records.myAllPlayByWeek[`${weekId}`] === this.allPlayMap[`${rank}`])
 //     //   })
 
 //     // }
@@ -227,7 +224,7 @@
 //     //   const { teamId } = scorecard;
 
 //     //   const team = this.teams[`${teamId}`]
-      
+
 //     //   if (rank <= middleIndex) {
 //     //     console.log(weekId, rank, middleIndex, teamId);
 //     //     team.records.myMedian.wins += 1;
@@ -241,19 +238,17 @@
 //       const prev = this.teams[`${teamId}`].records.myMedian
 
 //       // console.log(this.teams[`${teamId}`].teamName, { prev });
-      
 
 //       this.teams[`${teamId}`].records.myMedian.wins += 1;
 //     }
-    
 
 //     // for (let weekId = 1; weekId < this.currentWeek; weekId++) {
 //     //   const matchups = this.matchups[`${weekId}`];
-      
+
 //     //   this.sortMatchups(matchups);
-      
+
 //     //   const middleIndex = Math.ceil(matchups.length / 2);
-      
+
 //     //   matchups.forEach((matchup, index: number) => {
 //     //     const { teamId } = matchup;
 
@@ -262,7 +257,7 @@
 //     //        this.teams[`${teamId}`].records.myMedian.wins += 1;
 //     //     }
 //     //   })
-      
+
 //     // }
 
 //     // for (let weekId = 1; weekId < this.currentWeek; weekId++) {
@@ -272,10 +267,10 @@
 //     //   const middleIndex = Math.ceil(week.length / 2);
 
 //     //   // week.forEach((scorecard, index) => {
-        
+
 //     //   //   const { teamId } = scorecard;
 //     //   //   const rank = index + 1;
-        
+
 //     //   //   if (rank <= middleIndex) {
 //     //   //     this.teams[teamId].records.myMedian.wins += 1;
 //     //   //     console.log(teamId, this.teams[teamId].records);
@@ -285,10 +280,10 @@
 //     //   //   //   this.teams[String(teamId)].records.myMedian.losses += 1;
 //     //   //   // }
 //     //   // })
-      
+
 //     //   // const topHalf = week.slice().splice(0, middleIndex);
 //     //   // const bottomHalf = week.slice().splice(-middleIndex);
-      
+
 //     //   // topHalf.forEach((scorecard) => {
 //     //   //   const { teamId } = scorecard;
 //     //   //   this.teams[`${teamId}`].records.myMedian.wins += 1;
@@ -338,12 +333,12 @@
 
 //     // if (away.totalPoints > home.totalPoints) {
 //     //   console.log('top: ', away.totalPoints, home.totalPoints)
-//     //   this.teams[awayId].records.myCumulative[`${matchupPeriodId}`].wins += 1; 
-//     //   this.teams[homeId].records.myCumulative[`${matchupPeriodId}`].losses += 1; 
+//     //   this.teams[awayId].records.myCumulative[`${matchupPeriodId}`].wins += 1;
+//     //   this.teams[homeId].records.myCumulative[`${matchupPeriodId}`].losses += 1;
 //     // } else {
 //     //   console.log('bottom: ', away.totalPoints, home.totalPoints)
-//     //   this.teams[homeId].records.myCumulative[`${matchupPeriodId}`].wins += 1; 
-//     //   this.teams[awayId].records.myCumulative[`${matchupPeriodId}`].losses += 1; 
+//     //   this.teams[homeId].records.myCumulative[`${matchupPeriodId}`].wins += 1;
+//     //   this.teams[awayId].records.myCumulative[`${matchupPeriodId}`].losses += 1;
 //     // }
 
 //     // const awayTeam = this.teams[`${awayId}`];
@@ -351,15 +346,15 @@
 
 //     // const awayPrevWins = awayTeam.records.myCumulative[`${matchupPeriodId - 1}`].wins;
 //     // const awayPrevLosses = awayTeam.records.myCumulative[`${matchupPeriodId - 1}`].losses;
-    
+
 //     // const homePrevWins = homeTeam.records.myCumulative[`${matchupPeriodId - 1}`].wins;
 //     // const homePrevLosses = homeTeam.records.myCumulative[`${matchupPeriodId - 1}`].losses;
-    
+
 //     // console.log(awayTeam.teamName, awayPrevWins, awayPrevLosses);
 
 //     // awayTeam.records.myCumulative[`${matchupPeriodId}`] = {} as WinLoss;
 //     // homeTeam.records.myCumulative[`${matchupPeriodId}`] = {} as WinLoss;
-    
+
 //     // awayTeam.records.myCumulative[`${matchupPeriodId}`].wins = awayPrevWins;
 //     // awayTeam.records.myCumulative[`${matchupPeriodId}`].losses = awayPrevLosses;
 
@@ -367,8 +362,7 @@
 //     // homeTeam.records.myCumulative[`${matchupPeriodId}`].losses = homePrevLosses;
 
 //     // console.log(awayTeam.records.myCumulative[`${matchupPeriodId}`]);
-    
-    
+
 //     // // awayTeam.records.myCumulative[`${matchupPeriodId}`] = { wins: awayPrevWins, losses: awayPrevLosses };
 //     // // homeTeam.records.myCumulative[`${matchupPeriodId}`] = { wins: homePrevWins, losses: homePrevLosses };
 
@@ -437,7 +431,7 @@
 //   private async setBoxscore() {
 //     const boxscore = await this.getBoxscore();
 //     console.log({boxscore});
-    
+
 //     this.boxscore = boxscore;
 //   }
 
