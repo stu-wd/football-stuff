@@ -9,6 +9,7 @@ import Team from './team';
 export default class something2 {
   public readonly leagueId: number;
   public readonly year: number;
+  public currentWeek: number;
 
   public boxscore: EspnBoxscore;
   private boxscoreUrl: string;
@@ -26,6 +27,7 @@ export default class something2 {
 
   private async initialize(): Promise<void> {
     await this.setBoxscore();
+    this.setCurrentWeek();
     this.setTeams();
     this.setMatchups();
     this.setSchedule();
@@ -34,7 +36,9 @@ export default class something2 {
     this.setAllPlayByWeekRecords();
     this.setAllPlayOverallRecords();
     this.setCumulativeRecords();
-    console.log(this.teams['1'].records.myCumulative);
+    this.setWeeklyRank();
+    this.setWeeklyRankAvg();
+    console.log(this.teams['1']);
   }
 
   private async getBoxscore(): Promise<EspnBoxscore> {
@@ -48,6 +52,10 @@ export default class something2 {
 
   private async setBoxscore(): Promise<void> {
     this.boxscore = await this.getBoxscore();
+  }
+
+  private setCurrentWeek() {
+    this.currentWeek = this.boxscore.scoringPeriodId;
   }
 
   private createTeamEntries(): Record<string, TeamSchema> {
@@ -204,6 +212,32 @@ export default class something2 {
           homeCumulative.losses = homeCumulativeLast.losses;
         }
       }
+    });
+  }
+
+  private setWeeklyRank() {
+    Object.keys(this.matchups).forEach((weekId: string) => {
+      const matchups = this.matchups[weekId];
+      matchups.forEach((scorecard, index) => {
+        const rank = index + 1;
+        this.teams[`${scorecard.teamId}`].weeklyRank[weekId] = rank;
+      });
+    });
+  }
+
+  private setWeeklyRankAvg() {
+    const currentWeek =
+      this.boxscore.scoringPeriodId <= 14 ? this.boxscore.scoringPeriodId : 14;
+
+    Object.keys(this.teams).forEach((teamId: string) => {
+      const team = this.teams[teamId];
+      const { weeklyRank } = team;
+      let total = 0;
+      for (let index = 1; index < currentWeek; index++) {
+        const element = weeklyRank[index];
+        total += element;
+      }
+      team.weeklyRankAvg = Number((total / currentWeek).toFixed(2));
     });
   }
 }

@@ -7,6 +7,7 @@ export interface TeamSchema {
   records: RecordsSchema;
   schedule: Record<string, number>;
   weeklyRank: Record<string, number>;
+  weeklyRankAvg: number;
   // weeklyDeviation: Record<string, number>;
 }
 

@@ -1,3 +1,4 @@
+import { NumberUnitLength } from 'luxon';
 import { EspnTeam } from '../models/espn-api-responses';
 import { RecordsSchema, WinLoss } from '../models/my-league';
 
@@ -9,6 +10,7 @@ export default class Team {
   public schedule: Record<string, number>;
   public records: RecordsSchema;
   public weeklyRank: Record<string, number>;
+  public weeklyRankAvg: number;
 
   constructor(team: EspnTeam) {
     const { id, location, logo, nickname, record } = team;
@@ -23,6 +25,7 @@ export default class Team {
 
     this.schedule = this.initializeEmptyObject();
     this.weeklyRank = this.initializeEmptyObject();
+    this.weeklyRankAvg = 0;
   }
 
   private initializeRecords(): RecordsSchema {
