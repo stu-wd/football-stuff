@@ -23,8 +23,9 @@ export interface RecordsSchema {
 
 export interface RecordTypeSchema {
   weekly: WinLoss;
-  median?: WinLoss;
-  combined?: WinLoss;
+  median: WinLoss;
+  combined: WinLoss;
+  allPlay: WinLoss;
 }
 
 export interface Matchup {

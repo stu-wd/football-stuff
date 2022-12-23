@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { create } from 'domain';
 import {
   EspnBoxscore,
   EspnMatchup,
@@ -36,7 +35,7 @@ export default class something2 {
     this.loopBoxscoreSchedule();
     this.loopMatchups();
     this.loopTeams();
-    console.log(this.teams['1']);
+    console.log(this.teams['1'].records.pastOpponents);
   }
 
   private async getBoxscore(): Promise<EspnBoxscore> {
@@ -106,6 +105,7 @@ export default class something2 {
       this.setCombinedRecords(team);
       this.setAllPlayOverallRecords(team);
       this.setWeeklyRankAvg(team);
+      this.setPastOpponentsInfo(team);
     });
   }
 
@@ -227,5 +227,31 @@ export default class something2 {
       total += element;
     }
     team.weeklyRankAvg = Number((total / this.currentWeek).toFixed(2));
+  }
+
+  private setPastOpponentsInfo(team: Team) {
+    const { schedule } = team;
+    for (let weekId = 1; weekId <= this.currentWeek; weekId++) {
+      const opponentId = schedule[`${weekId}`];
+      const opponentRecords = this.teams[`${opponentId}`].records;
+
+      team.records.pastOpponents.weekly.wins += opponentRecords.myWeekly.wins;
+      team.records.pastOpponents.weekly.losses +=
+        opponentRecords.myWeekly.losses;
+
+      team.records.pastOpponents.median.wins += opponentRecords.myMedian.wins;
+      team.records.pastOpponents.median.losses +=
+        opponentRecords.myMedian.losses;
+
+      team.records.pastOpponents.allPlay.wins +=
+        opponentRecords.myAllPlayOverall.wins;
+      team.records.pastOpponents.allPlay.losses +=
+        opponentRecords.myAllPlayOverall.losses;
+
+      team.records.pastOpponents.combined.wins +=
+        opponentRecords.myWeekly.wins + opponentRecords.myMedian.wins;
+      team.records.pastOpponents.combined.losses +=
+        opponentRecords.myWeekly.losses + opponentRecords.myMedian.losses;
+    }
   }
 }

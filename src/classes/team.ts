@@ -40,11 +40,13 @@ export default class TeamSchema {
         weekly: { wins: 0, losses: 0 },
         median: { wins: 0, losses: 0 },
         combined: { wins: 0, losses: 0 },
+        allPlay: { wins: 0, losses: 0 },
       },
       pastOpponents: {
         weekly: { wins: 0, losses: 0 },
         median: { wins: 0, losses: 0 },
         combined: { wins: 0, losses: 0 },
+        allPlay: { wins: 0, losses: 0 },
       },
     };
   }
