@@ -21,22 +21,28 @@ const boxscoreUrl = `https://fantasy.espn.com/apis/v3/games/ffl/seasons/${year}/
 
 import pkg from 'espn-fantasy-football-api/node';
 
-const { Client, Boxscore } = pkg;
-const myClient = new Client({ leagueId: dynastyId});
+const { Client, Boxscore } = pkg;
+const myClient = new Client({ leagueId: dynastyId });
 
-myClient.setCookies({ SWID: '{DEA1FB92-DABC-44DE-A1FB-92DABC74DE13}', espnS2: 'AECStaUhVylsnqStbeLGRK%2FkV0OgxwDwIAapSzNaqz8t4uUsfHoPHL%2B6HhwKwglrEWPrGgSa97SY%2BG4R42qkf3jngEml6SAbqwZ%2BbjT%2FNmLgRkcCHIwK6FnFwNyU4YVZRzB9bneNSTdjoS0gw%2B3RM2CtZkH1iPZsQPSp5Ewr09pr3N2Zzan0D8JbRDuV8vVqAVvtoLYbf0prE5mfb3t8HzUI8O9xN3XXVHnTWtYCIDcd6Nko3vOKx6uou2bu%2BOPRPrfSr65OyRdsY1LFpxYRpJcL' })
+myClient.setCookies({
+  SWID: '{DEA1FB92-DABC-44DE-A1FB-92DABC74DE13}',
+  espnS2:
+    'AECStaUhVylsnqStbeLGRK%2FkV0OgxwDwIAapSzNaqz8t4uUsfHoPHL%2B6HhwKwglrEWPrGgSa97SY%2BG4R42qkf3jngEml6SAbqwZ%2BbjT%2FNmLgRkcCHIwK6FnFwNyU4YVZRzB9bneNSTdjoS0gw%2B3RM2CtZkH1iPZsQPSp5Ewr09pr3N2Zzan0D8JbRDuV8vVqAVvtoLYbf0prE5mfb3t8HzUI8O9xN3XXVHnTWtYCIDcd6Nko3vOKx6uou2bu%2BOPRPrfSr65OyRdsY1LFpxYRpJcL',
+});
 
 // const teams = await myClient.getTeamsAtWeek({ seasonId: 2021, scoringPeriodId: 2})
 
-const boxscore = await myClient.getBoxscoreForWeek({seasonId: 2022, matchupPeriodId: 3, scoringPeriodId: 3 });
+const boxscore = await myClient.getBoxscoreForWeek({
+  seasonId: 2022,
+  matchupPeriodId: 3,
+  scoringPeriodId: 3,
+});
 
 // console.log(boxscore);
-
 
 // teams.forEach((team) => {
 //   console.log(team.roster)
 // })
-
 
 // console.log(teams[0].roster);
 
@@ -57,6 +63,6 @@ import something2 from './classes/something2';
 
 // const dynasty = new DynastyBoxscore({ leagueId: dynastyId, year: 2022 });
 
-new something2(dynastyId, 2022)
+new something2(dynastyId, 2022);
 
 export {};

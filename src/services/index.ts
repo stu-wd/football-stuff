@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { RecordsSchema, TeamSchema, WinLoss } from '../models/my-league';
+import { RecordsSchema, Team, WinLoss } from '../models/my-league';
 
 export const fetchUrl = async (url: string): Promise<any> => {
   try {
@@ -23,7 +23,7 @@ export const checksIfTaxi = (value: string | number) => {
   }
 };
 
-export const createAllPlayMap = (teams: Record<string, TeamSchema>) => {
+export const createAllPlayMap = (teams: Record<string, Team>) => {
   const count = Object.keys(teams).length;
   const allPlayMap: Record<string, any> = {};
   for (let i = 0; i < count; i++) {

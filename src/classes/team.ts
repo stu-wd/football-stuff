@@ -2,7 +2,7 @@ import { NumberUnitLength } from 'luxon';
 import { EspnTeam } from '../models/espn-api-responses';
 import { RecordsSchema, WinLoss } from '../models/my-league';
 
-export default class Team {
+export default class TeamSchema {
   public teamName: string;
   public id: number;
   public logo: string;

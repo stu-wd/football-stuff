@@ -1,13 +1,13 @@
 // import { fetchUrl } from '../services';
 // import { EspnBoxscore, EspnTeam } from '../models/espn-api-responses';
-// import { createAllPlayMap, TeamSchema, TeamStarter, TeamVariables, WinLoss } from '../models/my-league';
+// import { createAllPlayMap, Team, TeamStarter, TeamVariables, WinLoss } from '../models/my-league';
 
 // export default class DynastyBoxscore {
 //   leagueId: number;
 //   year: number;
 //   boxscoreUrl: string;
 //   boxscore: EspnBoxscore;
-//   teams: Record<string, TeamSchema> = {};
+//   teams: Record<string, Team> = {};
 //   matchups: Record<
 //     string,
 //     { teamId: number; score: number; opponentId: number }[]

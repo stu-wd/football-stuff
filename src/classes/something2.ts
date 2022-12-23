@@ -1,21 +1,24 @@
 import axios from 'axios';
-import { privateEncrypt } from 'crypto';
-import { createHistogram } from 'perf_hooks';
-import { EspnBoxscore, EspnTeam } from '../models/espn-api-responses';
-import { Matchup, TeamSchema, WinLoss } from '../models/my-league';
-import { checksIfTaxi, createAllPlayMap, fetchUrl } from '../services';
-import Team from './team';
+import { create } from 'domain';
+import {
+  EspnBoxscore,
+  EspnMatchup,
+  EspnTeam,
+} from '../models/espn-api-responses';
+import { Matchup, Team, WinLoss } from '../models/my-league';
+import { checksIfTaxi, createAllPlayMap } from '../services';
+import TeamSchema from './team';
 
 export default class something2 {
-  public readonly leagueId: number;
-  public readonly year: number;
-  public currentWeek: number;
+  private readonly leagueId: number;
+  private readonly year: number;
+  private currentWeek: number;
 
-  public boxscore: EspnBoxscore;
+  private boxscore: EspnBoxscore;
   private boxscoreUrl: string;
 
-  public teams: Record<string, TeamSchema>;
-  public matchups: Record<string, Matchup[]>;
+  private teams: Record<string, Team>;
+  private matchups: Record<string, Matchup[]> = {};
   private allPlayMap: Record<string, WinLoss>;
 
   constructor(leagueId: number, year: number) {
@@ -29,15 +32,10 @@ export default class something2 {
     await this.setBoxscore();
     this.setCurrentWeek();
     this.setTeams();
-    this.setMatchups();
-    this.setSchedule();
-    this.setMedianRecords();
-    this.setCombinedRecords();
-    this.setAllPlayByWeekRecords();
-    this.setAllPlayOverallRecords();
-    this.setCumulativeRecords();
-    this.setWeeklyRank();
-    this.setWeeklyRankAvg();
+    this.setAllPlayMap();
+    this.loopBoxscoreSchedule();
+    this.loopMatchups();
+    this.loopTeams();
     console.log(this.teams['1']);
   }
 
@@ -55,51 +53,80 @@ export default class something2 {
   }
 
   private setCurrentWeek() {
-    this.currentWeek = this.boxscore.scoringPeriodId;
+    this.currentWeek =
+      this.boxscore.scoringPeriodId <= 14 ? this.boxscore.scoringPeriodId : 14;
   }
 
-  private createTeamEntries(): Record<string, TeamSchema> {
-    const teams: Record<string, TeamSchema> = {};
+  private createTeamEntries(): Record<string, Team> {
+    const teams: Record<string, Team> = {};
     this.boxscore.teams.forEach((team: EspnTeam) => {
       if (!checksIfTaxi(team.id)) {
-        const entry = new Team(team);
+        const entry = new TeamSchema(team);
         teams[`${team.id}`] = entry;
       }
     });
     return teams;
   }
 
-  private setTeams(): void {
+  private setTeams() {
     this.teams = this.createTeamEntries();
   }
 
-  private createMatchups() {
-    const matchups: Record<string, Matchup[]> = {};
-    this.boxscore.schedule.forEach((matchup) => {
-      const { away, home, matchupPeriodId } = matchup;
-      if (away && home && !checksIfTaxi(home.teamId) && matchupPeriodId <= 14) {
-        const awayInfo = {
-          teamId: away.teamId,
-          score: away.totalPoints,
-          opponentId: home.teamId,
-        };
+  private setAllPlayMap() {
+    this.allPlayMap = createAllPlayMap(this.teams);
+  }
 
-        const homeInfo = {
-          teamId: home.teamId,
-          score: home.totalPoints,
-          opponentId: away.teamId,
-        };
+  private isValidMatchup(matchup: EspnMatchup) {
+    const { away, home, matchupPeriodId } = matchup;
+    return away && home && !checksIfTaxi(home.teamId) && matchupPeriodId <= 14;
+  }
 
-        if (!matchups[`${matchupPeriodId}`]) {
-          matchups[`${matchupPeriodId}`] = [];
-        }
-
-        matchups[`${matchupPeriodId}`].push(awayInfo, homeInfo);
-
-        this.sortMatchups(matchups[`${matchupPeriodId}`]);
+  private loopBoxscoreSchedule() {
+    this.boxscore.schedule.forEach((matchup: EspnMatchup) => {
+      if (this.isValidMatchup(matchup)) {
+        this.setMatchups(matchup);
+        this.setSchedule(matchup);
+        this.setCumulativeRecords(matchup);
       }
     });
-    return matchups;
+  }
+
+  private loopMatchups() {
+    Object.keys(this.matchups).forEach((weekId: string) => {
+      const matchups: Matchup[] = this.matchups[weekId];
+      this.setMedianRecords(matchups);
+      this.setAllPlayByWeekRecords(matchups, weekId);
+      this.setWeeklyRank(matchups, weekId);
+    });
+  }
+
+  private loopTeams() {
+    Object.keys(this.teams).forEach((teamId: string) => {
+      const team = this.teams[teamId];
+      this.setCombinedRecords(team);
+      this.setAllPlayOverallRecords(team);
+      this.setWeeklyRankAvg(team);
+    });
+  }
+
+  private setMatchups(matchup: EspnMatchup) {
+    const { away, home, matchupPeriodId } = matchup;
+    const awayInfo = {
+      teamId: away.teamId,
+      score: away.totalPoints,
+    };
+
+    const homeInfo = {
+      teamId: home.teamId,
+      score: home.totalPoints,
+    };
+
+    if (!this.matchups[`${matchupPeriodId}`]) {
+      this.matchups[`${matchupPeriodId}`] = [];
+    }
+
+    this.matchups[`${matchupPeriodId}`].push(awayInfo, homeInfo);
+    this.sortMatchups(this.matchups[`${matchupPeriodId}`]);
   }
 
   private sortMatchups(matchups: Matchup[]): Matchup[] {
@@ -108,136 +135,97 @@ export default class something2 {
     });
   }
 
-  private setMatchups() {
-    this.matchups = this.createMatchups();
+  private setSchedule(matchup: EspnMatchup) {
+    const { away, home, matchupPeriodId } = matchup;
+    this.teams[`${away.teamId}`].schedule[`${matchupPeriodId}`] = home.teamId;
+    this.teams[`${home.teamId}`].schedule[`${matchupPeriodId}`] = away.teamId;
   }
 
-  private setSchedule() {
-    this.boxscore.schedule.forEach((matchup) => {
-      const { away, home, matchupPeriodId } = matchup;
-      if (away && home && !checksIfTaxi(home.teamId) && matchupPeriodId <= 14) {
-        this.teams[`${away.teamId}`].schedule[`${matchupPeriodId}`] =
-          home.teamId;
-        this.teams[`${home.teamId}`].schedule[`${matchupPeriodId}`] =
-          away.teamId;
+  private setCumulativeRecords(matchup: EspnMatchup) {
+    const { away, home, matchupPeriodId } = matchup;
+
+    const lastMatchup = matchupPeriodId - 1;
+
+    const awayCumulativeLast =
+      this.teams[`${away.teamId}`].records.myCumulative[`${lastMatchup}`];
+
+    const homeCumulativeLast =
+      this.teams[`${home.teamId}`].records.myCumulative[`${lastMatchup}`];
+
+    let awayCumulative =
+      this.teams[`${away.teamId}`].records.myCumulative[`${matchupPeriodId}`];
+
+    let homeCumulative =
+      this.teams[`${home.teamId}`].records.myCumulative[`${matchupPeriodId}`];
+
+    if (away.totalPoints > home.totalPoints) {
+      awayCumulative.wins = awayCumulativeLast.wins + 1;
+      awayCumulative.losses = awayCumulativeLast.losses;
+
+      homeCumulative.wins = homeCumulativeLast.wins;
+      homeCumulative.losses = homeCumulativeLast.losses + 1;
+    } else {
+      awayCumulative.wins = awayCumulativeLast.wins;
+      awayCumulative.losses = awayCumulativeLast.losses + 1;
+
+      homeCumulative.wins = homeCumulativeLast.wins + 1;
+      homeCumulative.losses = homeCumulativeLast.losses;
+    }
+  }
+
+  private setMedianRecords(matchups: Matchup[]) {
+    matchups.forEach((matchup, index) => {
+      const middleIndex = Math.ceil(matchups.length / 2);
+      const { teamId } = matchup;
+      const team = this.teams[`${teamId}`];
+      if (index < middleIndex) {
+        team.records.myMedian.wins += 1;
+      } else {
+        team.records.myMedian.losses += 1;
       }
     });
   }
 
-  private setMedianRecords() {
-    Object.keys(this.matchups).forEach((weekId: string) => {
-      const matchups: Matchup[] = this.matchups[weekId];
-      matchups.forEach((scorecard, index) => {
-        const middleIndex = Math.ceil(matchups.length / 2);
-        const { teamId } = scorecard;
-        const team = this.teams[`${teamId}`];
-        if (index < middleIndex) {
-          team.records.myMedian.wins += 1;
-        } else {
-          team.records.myMedian.losses += 1;
-        }
-      });
+  private setAllPlayByWeekRecords(matchups: Matchup[], weekId: string) {
+    matchups.forEach((matchup, index) => {
+      const { teamId } = matchup;
+      const team = this.teams[`${teamId}`];
+      team.records.myAllPlayByWeek[weekId] = this.allPlayMap[`${index + 1}`];
     });
   }
 
-  private setCombinedRecords() {
-    Object.keys(this.teams).forEach((teamId: string) => {
-      const team = this.teams[teamId];
-      team.records.myCombined.wins =
-        team.records.myWeekly.wins + team.records.myMedian.wins;
-
-      team.records.myCombined.losses =
-        team.records.myWeekly.losses + team.records.myMedian.losses;
+  private setWeeklyRank(matchups: Matchup[], weekId: string) {
+    matchups.forEach((matchup, index) => {
+      const rank = index + 1;
+      this.teams[`${matchup.teamId}`].weeklyRank[weekId] = rank;
     });
   }
 
-  private setAllPlayByWeekRecords() {
-    this.allPlayMap = createAllPlayMap(this.teams);
-    Object.keys(this.matchups).forEach((weekId: string) => {
-      const matchups = this.matchups[weekId];
-      matchups.forEach((scorecard, index) => {
-        const { teamId } = scorecard;
-        const team = this.teams[`${teamId}`];
-        team.records.myAllPlayByWeek[weekId] = this.allPlayMap[`${index + 1}`];
-      });
+  private setCombinedRecords(team: Team) {
+    team.records.myCombined.wins =
+      team.records.myWeekly.wins + team.records.myMedian.wins;
+
+    team.records.myCombined.losses =
+      team.records.myWeekly.losses + team.records.myMedian.losses;
+  }
+
+  private setAllPlayOverallRecords(team: Team) {
+    const allPlays = team.records.myAllPlayByWeek;
+    Object.keys(allPlays).forEach((weekId: string) => {
+      const wins = allPlays[weekId].wins;
+      team.records.myAllPlayOverall.wins += wins;
+      const losses = allPlays[weekId].losses;
+      team.records.myAllPlayOverall.losses += losses;
     });
   }
 
-  private setAllPlayOverallRecords() {
-    Object.keys(this.teams).forEach((teamId: string) => {
-      const team = this.teams[teamId];
-      const allPlays = team.records.myAllPlayByWeek;
-      Object.keys(allPlays).forEach((weekId: string) => {
-        const wins = allPlays[weekId].wins;
-        team.records.myAllPlayOverall.wins += wins;
-        const losses = allPlays[weekId].losses;
-        team.records.myAllPlayOverall.losses += losses;
-      });
-    });
-  }
-
-  private setCumulativeRecords() {
-    this.boxscore.schedule.forEach((matchup, index) => {
-      const { away, home, matchupPeriodId } = matchup;
-      if (away && home && !checksIfTaxi(home.teamId) && matchupPeriodId <= 14) {
-        const lastMatchup = matchupPeriodId - 1;
-
-        const awayCumulativeLast =
-          this.teams[`${away.teamId}`].records.myCumulative[`${lastMatchup}`];
-
-        const homeCumulativeLast =
-          this.teams[`${home.teamId}`].records.myCumulative[`${lastMatchup}`];
-
-        const awayCumulative =
-          this.teams[`${away.teamId}`].records.myCumulative[
-            `${matchupPeriodId}`
-          ];
-
-        const homeCumulative =
-          this.teams[`${home.teamId}`].records.myCumulative[
-            `${matchupPeriodId}`
-          ];
-
-        if (away.totalPoints > home.totalPoints) {
-          awayCumulative.wins = awayCumulativeLast.wins + 1;
-          awayCumulative.losses = awayCumulativeLast.losses;
-
-          homeCumulative.losses = homeCumulativeLast.losses + 1;
-          homeCumulative.wins = homeCumulativeLast.wins;
-        } else {
-          awayCumulative.losses = awayCumulativeLast.losses + 1;
-          awayCumulative.wins = awayCumulativeLast.wins;
-
-          homeCumulative.wins = homeCumulativeLast.wins + 1;
-          homeCumulative.losses = homeCumulativeLast.losses;
-        }
-      }
-    });
-  }
-
-  private setWeeklyRank() {
-    Object.keys(this.matchups).forEach((weekId: string) => {
-      const matchups = this.matchups[weekId];
-      matchups.forEach((scorecard, index) => {
-        const rank = index + 1;
-        this.teams[`${scorecard.teamId}`].weeklyRank[weekId] = rank;
-      });
-    });
-  }
-
-  private setWeeklyRankAvg() {
-    const currentWeek =
-      this.boxscore.scoringPeriodId <= 14 ? this.boxscore.scoringPeriodId : 14;
-
-    Object.keys(this.teams).forEach((teamId: string) => {
-      const team = this.teams[teamId];
-      const { weeklyRank } = team;
-      let total = 0;
-      for (let index = 1; index < currentWeek; index++) {
-        const element = weeklyRank[index];
-        total += element;
-      }
-      team.weeklyRankAvg = Number((total / currentWeek).toFixed(2));
-    });
+  private setWeeklyRankAvg(team: Team) {
+    const { weeklyRank } = team;
+    let total = 0;
+    for (let index = 1; index < this.currentWeek; index++) {
+      const element = weeklyRank[index];
+      total += element;
+    }
+    team.weeklyRankAvg = Number((total / this.currentWeek).toFixed(2));
   }
 }
